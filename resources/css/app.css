@@ -11,3 +11,46 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+@layer components {
+    .btn-primary {
+        @apply inline-block px-6 py-2 rounded-xl text-center text-white text-lg;
+        @apply bg-cyan-600 bg-opacity-100 transition-all duration-300;
+        @apply hover:bg-cyan-400 hover:shadow-lg hover:shadow-cyan-500/30;
+    }
+
+    .input-main {
+        @apply w-full px-4 py-5 lg:py-2 text-lg rounded-xl border-2 border-gray-300 outline-none;
+        @apply transition-all duration-300;
+        @apply hover:border-cyan-500 hover:ring-4 hover:ring-cyan-500/10;
+        @apply focus:border-b-green-400 focus:ring-4 focus:ring-cyan-500/10;
+    }
+
+    .checkbox {
+        @apply sr-only;
+    }
+
+    .checkbox-tile {
+        @apply w-6 h-6 border-2 border-gray-300 rounded-lg flex items-center justify-center;
+        @apply transition-all duration-300 cursor-pointer bg-white;
+        @apply hover:border-cyan-500 hover:ring-4 hover:ring-cyan-500/10;
+    }
+
+    .checkbox:checked + .checkbox-tile {
+        @apply bg-cyan-600 border-cyan-600 shadow-lg shadow-cyan-500/30;
+    }
+
+    .checkbox-tile::after {
+        content: '';
+        @apply w-3 h-1.5 border-l-2 border-b-2 border-white opacity-0 transition-opacity duration-300;
+        transform: rotate(-45deg) translateY(-1px);
+    }
+
+    .checkbox:checked + .checkbox-tile::after {
+        @apply opacity-100;
+    }
+
+    .checkbox:focus + .checkbox-tile {
+        @apply ring-4 ring-cyan-500/20 border-cyan-500;
+    }
+}

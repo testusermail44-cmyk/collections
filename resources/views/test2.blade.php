@@ -22,5 +22,22 @@
     <body>
         session: {{ session('test-sess') }}
         session: {{ $val }}
+        <div class="p-6">
+        <h2 class="text-xl font-bold mb-4">Предмети в базі даних (MySQL):</h2>
+
+        <div class="grid grid-cols-1 gap-4">
+            @foreach($dbItems as $item)
+                <div class="border p-4 rounded shadow-sm flex items-center gap-4">
+                    <img src="{{ $item->image }}" alt="" class="w-20 h-20 object-cover rounded">
+                    <div>
+                        <p class="font-bold">{{ $item->name }}</p>
+                        <p class="text-xs text-gray-400">ID: {{ $item->id }} | Колекція: {{ $item->collection }}</p>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <a href="/test" class="underline mt-8 block text-blue-600">Назад до форми</a>
+    </div>
     </body>
 </html>
