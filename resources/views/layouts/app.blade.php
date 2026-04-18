@@ -12,8 +12,10 @@
 
 <body class="overflow-y-hidden flex flex-col">
     @include('partials.header')
-    <main class="h-[calc(100vh-68px)] container mx-auto px-4 py-4 lg:px-20 overflow-y-auto">
-        @yield('content')
+    <main class="h-[calc(100vh-68px)] w-full overflow-y-auto">
+        <div class="container mx-auto px-4 py-4 lg:px-20">
+            @yield('content')
+        </div>
     </main>
     @php
         $hasMessage = $errors->any() || session('success');

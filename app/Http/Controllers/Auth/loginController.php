@@ -6,14 +6,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 
-class loginController extends Controller
+class LoginController extends Controller
 {
     function auth(Request $request)
     {
         $credentials = $request->only('email', 'password');
         if (Auth::attempt($credentials, $request->has('remember'))){
             $request->session()->regenerate();
-            return redirect()->intended('dashboard');
+            return redirect()->intended('home');
         }
         else {
             return back()

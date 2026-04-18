@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use App\Http\Controllers\Controller;
-class registrationController extends Controller
+class RegistrationController extends Controller
 {
     function register(Request $request)
     {

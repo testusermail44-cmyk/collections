@@ -19,7 +19,6 @@ class User extends Authenticatable
         'email',
         'password',
         'avatar_url',
-        'avatar_delete_url',
         'is_admin',
     ];
 
@@ -35,4 +34,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function getAvatarUrlAttribute($value)
+{
+    if (!$value) {
+        return asset('images/default-user.png');
+    }
+    return $value;
+}
 }
