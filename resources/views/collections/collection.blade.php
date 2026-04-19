@@ -85,7 +85,7 @@
                             <h3 class="font-black text-gray-800 text-lg truncate mb-2">{{ $item->name }}</h3>
                             <div class="flex justify-between items-center">
                                 <span class="text-[10px] text-gray-400 font-black uppercase tracking-widest">
-                                    {{ $item->created_at->format('M Y') }}
+                                    {{ $item->created_at->format('d.m.Y') }}
                                 </span>
                                 @if($item->condition)
                                     <span
