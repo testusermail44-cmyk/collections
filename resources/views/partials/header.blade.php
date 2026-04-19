@@ -70,7 +70,7 @@
                 </div>
             @endauth
             @guest
-                <a href="collection/collections" class="btn-primary">Переглянути колекції</a>
+                <a href="/collections/collections" class="btn-primary">Переглянути колекції</a>
                 <a href="auth/login" class="btn-primary">Увійти</a>
             @endguest
         </div>
