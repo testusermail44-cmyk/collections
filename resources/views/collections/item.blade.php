@@ -1,10 +1,10 @@
 @extends('layouts.app')
 @section('title', $item->name)
 @section('content')
-    <div class="max-w-6xl mx-auto px-4 py-10">
-        <div class="flex flex-col md:flex-row gap-10">
-            <div class="w-full md:w-1/2">
-                <div class="aspect-square rounded-3xl overflow-hidden border-4 border-white shadow-2xl bg-gray-50 mb-4">
+    <div class="w-full mx-auto py-10 flex flex-row gap-4">
+        <div class="flex flex-col gap-10 w-full">
+            <div class="w-full flex flex-col gap-2 items-center">
+                <div class="aspect-square rounded-3xl overflow-hidden border-4 border-white shadow-2xl bg-gray-50 mb-4 items-center justify-center w-[300px] md:w-[400px]">
                     @if($item->images->count() > 0)
                         <img id="main-item-photo" src="{{ $item->images->first()->url }}"
                             class="w-full h-full object-contain p-2 transition-opacity duration-300">
@@ -12,7 +12,6 @@
                         <div class="w-full h-full flex items-center justify-center bg-gray-100 text-gray-300 text-6xl">📦</div>
                     @endif
                 </div>
-
                 @if($item->images->count() > 1)
                     <div class="flex gap-3 overflow-x-auto pb-2">
                         @foreach($item->images as $img)
@@ -24,23 +23,12 @@
                     </div>
                 @endif
             </div>
-
-            <div class="w-full md:w-1/2">
-                <div class="mb-2">
-                    <span
-                        class="px-2 py-1 bg-gray-100 text-gray-500 text-[10px] font-bold uppercase rounded tracking-widest border border-gray-200">
-                        ID: #{{ $item->id }}
-                    </span>
-                </div>
-
-                <h1 class="text-4xl font-black text-gray-900 mb-4 leading-tight">{{ $item->name }}</h1>
-
-                <div class="h-1.5 w-20 bg-cyan-600 rounded-full mb-8"></div>
-
+            <div class="w-ful">
+                <h1 class="text-4xl font-black text-gray-900 mb-4 leading-tight w-full pb-2 border-b-4 border-b-cyan-600">{{ $item->name }}</h1>
                 <div class="grid grid-cols-2 gap-4 mb-8">
                     <div class="p-4 bg-cyan-50/50 rounded-2xl border border-cyan-100">
                         <p class="text-[10px] text-cyan-600 font-bold uppercase mb-1">Стан предмета</p>
-                        <p class="text-lg font-bold text-cyan-900">{{ $item->condition ?? 'Не вказано' }}</p>
+                        <p class="text-lg font-bold text-cyan-900">{{ $item->condition == 1 ? "Ідеальний" : ($item->condition == 2 ? "Гарний" : ( $item->condition == 3 ? "Середній" : "Поганий")) }}</p>
                     </div>
                     <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
                         <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Дата додавання</p>
@@ -55,7 +43,7 @@
                     </div>
                 </div>
 
-                <div class="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm flex items-center justify-between">
+                <div class="p-6 bg-white shadow shadow-gray-600/60 rounded-xl flex items-center justify-between">
                     <div class="flex items-center gap-4">
                         <div class="shrink-0">
                             <img src="{{ $item->collection->user->avatar_url }}"
@@ -68,25 +56,24 @@
                         </div>
                     </div>
                     <a href="{{ route('collections.elements', $item->collection->id) }}"
-                        class="text-xs font-bold text-cyan-600 hover:text-cyan-700 underline decoration-2 underline-offset-4">
-                        Вся колекція →
+                        class="btn-primary">
+                        Вся колекція
                     </a>
                 </div>
             </div>
         </div>
     </div>
-    <div class="mt-16 max-w-4xl">
+    <div class="mt-16 w-full mb-4">
         <h3 class="text-2xl font-bold mb-8 flex items-center gap-2">
             <span>Коментарі</span>
             <span class="text-sm bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{{ $item->comments->count() }}</span>
         </h3>
-
         <div class="mb-12">
             @auth
                 <form action="{{ route('items.comment', $item->id) }}" method="POST" class="space-y-4">
                     @csrf
                     <textarea name="content" rows="3"
-                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                        class="w-full p-4 bg-gray-50 resize-none border border-gray-200 rounded-2xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
                         placeholder="Напишіть свою думку про цей експонат..."></textarea>
                     <div class="flex justify-end">
                         <button type="submit"
@@ -107,7 +94,7 @@
 
         <div class="space-y-6">
             @forelse($item->comments as $comment)
-                <div class="flex gap-4 p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow relative group/comment">
+                <div class="flex gap-4 p-6 bg-white shadow shadow-gray-600/60 rounded-xl transition-shadow relative group/comment">
                     <div class="shrink-0">
                         <img src="{{ $comment->user->avatar_url }}" class="w-12 h-12 rounded-full border-2 border-cyan-500 object-cover shadow-sm">
                     </div>
