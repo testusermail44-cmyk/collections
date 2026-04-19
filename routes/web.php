@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\testController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\Collection\CollectionController;
@@ -71,12 +70,3 @@ Route::delete('/admin/categories/{category}', [AdminController::class, 'category
 Route::fallback(function () {
     return response()->view('errors.404', [], 404);
 });
-
-
-Route::get('/debug-user', function () {
-    dd(auth()->user());  
-});
-
-Route::get('/test', [testController::class, 'calculate']);
-Route::post('/test/upload', [testController::class, 'upload'])->name('test-upload'); // Новий роут
-Route::get('/test2', [testController::class, 'getSessionValue'])->name('test-session');
