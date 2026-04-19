@@ -61,7 +61,13 @@ Route::put('/items/{item}', [ItemController::class, 'update'])->name('items.upda
 Route::delete('/items/{item}', [ItemController::class, 'destroy'])->name('items.destroy')->middleware('auth');
 Route::delete('/items/photo/{image}', [ItemController::class, 'destroyImage'])->name('items.photo.destroy')->middleware('auth');
 Route::get('/admin/users', [AdminController::class, 'usersIndex'])->name('admin.users.index')->middleware('auth');
-    Route::patch('/admin/users/{user}/toggle-admin', [AdminController::class, 'toggleAdmin'])->name('admin.users.toggle')->middleware('auth');
+Route::patch('/admin/users/{user}/toggle-admin', [AdminController::class, 'toggleAdmin'])->name('admin.users.toggle')->middleware('auth');
+Route::get('/admin/categories', [AdminController::class, 'categoriesIndex'])->name('admin.categories.index')->middleware('auth');
+Route::get('/admin/categories/create', [AdminController::class, 'categoryCreate'])->name('admin.categories.create')->middleware('auth');
+Route::get('/admin/categories/{category}/edit', [AdminController::class, 'categoryEdit'])->name('admin.categories.edit')->middleware('auth');
+Route::post('/admin/categories', [AdminController::class, 'categoryStore'])->name('admin.categories.store')->middleware('auth');
+Route::put('/admin/categories/{category}', [AdminController::class, 'categoryUpdate'])->name('admin.categories.update')->middleware('auth');
+Route::delete('/admin/categories/{category}', [AdminController::class, 'categoryDestroy'])->name('admin.categories.destroy')->middleware('auth');
 Route::fallback(function () {
     return response()->view('errors.404', [], 404);
 });
