@@ -37,7 +37,7 @@
     @endif
     <div class="py-4 {{ $isMyCollections ? 'flex flex-row' :  'grid grid-cols-1 lg:grid-cols-2' }} gap-4 items-center justify-center">
         @if (count($publicCollections) == 0)
-            <div class="flex flex-col items-center gap-6">
+            <div class="flex flex-col items-center gap-6 col-span-2">
                 <div class="relative w-[150px] h-[150px] rounded-full border-4 border-cyan-600 bg-cyan-200 flex flex-col items-center justify-center">
                     <div class="flex flex-row gap-5 mb-4">
                         <div class="rounded-full w-10 h-10 bg-white border-4 border-cyan-600 flex items-center justify-center overflow-hidden">
