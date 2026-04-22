@@ -149,5 +149,13 @@
                 reader.readAsDataURL(file);
             });
         }
+        const form = document.getElementById('main-form');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        form.addEventListener('submit', function() {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Завантаження...';
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        });
     </script>
 @endsection
