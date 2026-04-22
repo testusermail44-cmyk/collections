@@ -68,7 +68,10 @@ Route::post('/admin/categories', [AdminController::class, 'categoryStore'])->nam
 Route::put('/admin/categories/{category}', [AdminController::class, 'categoryUpdate'])->name('admin.categories.update')->middleware('auth');
 Route::delete('/admin/categories/{category}', [AdminController::class, 'categoryDestroy'])->name('admin.categories.destroy')->middleware('auth');
 Route::get('/test-http', function () {
-    $response = \Illuminate\Support\Facades\Http::get('https://httpbin.org/get');
+$response = \Illuminate\Support\Facades\Http::post(
+        'https://api.imgbb.com/1/upload?key=' . config('services.imgbb.key'),
+        ['image' => base64_encode(file_get_contents(public_path('favicon.ico')))]
+    );
     return $response->body();
 });
 Route::fallback(function () {
