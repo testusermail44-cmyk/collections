@@ -93,16 +93,22 @@ class ItemController extends Controller
     }
 
     private function uploadImages($files, $item)
-    {
-        $files = is_array($files) ? $files : [$files];
-        foreach ($files as $image) {
-            $response = Http::asMultipart()->post('https://api.imgbb.com/1/upload', [
-                'key' => env('IMGBB_API_KEY'),
-                'image' => base64_encode(file_get_contents($image->getRealPath())),
+{
+    $files = is_array($files) ? $files : [$files];
+    foreach ($files as $image) {
+        $imageData = base64_encode(file_get_contents($image->getRealPath()));
+        $response = Http::asForm()->post('https://api.imgbb.com/1/upload', [
+            'key' => config('services.imgbb.key'),
+            'image' => $imageData,
+        ]);
+        if ($response->successful()) {
+            $item->images()->create(['url' => $response->json()['data']['url']]);
+        } else {
+            \Log::error('ImgBB upload failed', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
             ]);
-            if ($response->successful()) {
-                $item->images()->create(['url' => $response->json()['data']['url']]);
-            }
         }
     }
+}
 }
