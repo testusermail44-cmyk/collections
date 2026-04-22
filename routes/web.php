@@ -67,6 +67,10 @@ Route::get('/admin/categories/{category}/edit', [AdminController::class, 'catego
 Route::post('/admin/categories', [AdminController::class, 'categoryStore'])->name('admin.categories.store')->middleware('auth');
 Route::put('/admin/categories/{category}', [AdminController::class, 'categoryUpdate'])->name('admin.categories.update')->middleware('auth');
 Route::delete('/admin/categories/{category}', [AdminController::class, 'categoryDestroy'])->name('admin.categories.destroy')->middleware('auth');
+Route::get('/test-http', function () {
+    $response = \Illuminate\Support\Facades\Http::get('https://httpbin.org/get');
+    return $response->body();
+});
 Route::fallback(function () {
     return response()->view('errors.404', [], 404);
 });
