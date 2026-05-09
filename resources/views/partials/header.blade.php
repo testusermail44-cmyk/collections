@@ -71,7 +71,7 @@
             @endauth
             @guest
                 <a href="/collections/collections" class="btn-primary">Переглянути колекції</a>
-                <a href="auth/login" class="btn-primary">Увійти</a>
+                <a href="{{ route('login') }}" class="btn-primary">Увійти</a>
             @endguest
         </div>
     </nav>
