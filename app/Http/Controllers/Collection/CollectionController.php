@@ -114,9 +114,9 @@ class CollectionController extends Controller
                             ->orWhere('description', 'like', "%{$search}%");
                     });
                 })
-                ->when($request->category && $request->category != 0, function ($q, $category) {
-                    $q->where('category_id', $category);
-                });
+               ->when($request->category && $request->category != 0, function ($q) use ($request) {
+                $q->where('category_id', $request->category);
+            });
         }
         $publicCollections = $query->paginate(10)->withQueryString();
         return view('collections.collections', compact('publicCollections', 'categories', 'isMyCollections'));
