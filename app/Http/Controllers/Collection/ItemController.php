@@ -7,7 +7,6 @@ use App\Models\Item;
 use App\Models\ItemImage;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Http;
 
 class ItemController extends Controller
 {
@@ -24,21 +23,27 @@ class ItemController extends Controller
         if ($collection->user_id !== auth()->id()) {
             abort(403);
         }
+        
         $request->validate([
             'name' => 'required|max:255',
             'description' => 'required|string',
             'condition' => 'required|integer',
-            'images' => 'required',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
+            'uploaded_images' => 'required|array',
+            'uploaded_images.*' => 'url',
         ]);
+
         $item = $collection->items()->create([
             'name' => $request->name,
             'description' => $request->description,
             'condition' => $request->condition,
         ]);
-        if ($request->hasFile('images')) {
-            $this->uploadImages($request->file('images'), $item);
+
+        if ($request->has('uploaded_images')) {
+            foreach ($request->uploaded_images as $url) {
+                $item->images()->create(['url' => $url]);
+            }
         }
+
         return redirect()->route('collections.elements.my', $collection->id)->with('success', 'Предмет додано!')->with('type', 2);
     }
 
@@ -65,20 +70,27 @@ class ItemController extends Controller
         if ($item->collection->user_id !== auth()->id()) {
             abort(403);
         }
+
         $request->validate([
             'name' => 'required|max:255',
             'description' => 'required|string',
             'condition' => 'required|integer',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
+            'uploaded_images' => 'nullable|array',
+            'uploaded_images.*' => 'url',
         ]);
+
         $item->update([
             'name' => $request->name,
             'description' => $request->description,
             'condition' => $request->condition,
         ]);
-        if ($request->hasFile('images')) {
-            $this->uploadImages($request->file('images'), $item);
+
+        if ($request->has('uploaded_images')) {
+            foreach ($request->uploaded_images as $url) {
+                $item->images()->create(['url' => $url]);
+            }
         }
+
         return redirect()->route('collections.elements.my', $item->collection_id)->with('success', 'Предмет оновлено!')->with('type', 2);
     }
 
@@ -91,26 +103,4 @@ class ItemController extends Controller
         $item->delete();
         return back()->with('success', 'Предмет видалено!')->with('type', 2);
     }
-
-private function uploadImages($files, $item)
-{
-    $files = is_array($files) ? $files : [$files];
-    
-    foreach ($files as $image) {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://api.imgbb.com/1/upload?key=' . config('services.imgbb.key'));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, [
-            'image' => base64_encode(file_get_contents($image->getRealPath())),
-        ]);
-        $response = curl_exec($ch);
-        curl_close($ch);
-        
-        $resData = json_decode($response, true);
-        if (isset($resData['data']['url'])) {
-            $item->images()->create(['url' => $resData['data']['url']]);
-        }
-    }
-}
 }
