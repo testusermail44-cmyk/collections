@@ -8,7 +8,7 @@
                 <p class="text-gray-500 text-sm">Керуйте вашими персональними даними та аватаркою</p>
             </div>
 
-            <form action="{{ route('user.update') }}" method="POST" enctype="multipart/form-data" class="p-8 space-y-6">
+            <form action="{{ route('user.update') }}" method="POST" id="profile-form" class="p-8 space-y-6">
                 @csrf
                 @method('PUT')
 
@@ -18,13 +18,15 @@
                         <div class="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
                             <span class="text-white text-xs font-bold">Змінити</span>
                         </div>
-                        <input type="file" name="avatar" accept="image/*" onchange="previewImage(this)" class="absolute inset-0 opacity-0 cursor-pointer">
+                        <input type="file" id="avatar-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
                     </div>
                     <div>
                         <h3 class="font-bold text-gray-700">Ваше фото</h3>
-                        <p class="text-xs text-gray-400">Дозволені формати: JPG, PNG. До 2 Мб.</p>
+                        <p class="text-xs text-gray-400" id="upload-status">Дозволені формати: JPG, PNG. До 2 Мб.</p>
                     </div>
                 </div>
+
+                <input type="hidden" name="avatar_url" id="avatar-url-hidden" value="{{ old('avatar_url') }}">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="space-y-1">
@@ -33,8 +35,7 @@
                     </div>
                     <div class="space-y-1">
                         <label class="text-gray-500 text-lg">Прізвище</label>
-                        <input type="text" name="lastname" value="{{ old('lastname', $user->lastname) }}"
-                            class="input-main w-full">
+                        <input type="text" name="lastname" value="{{ old('lastname', $user->lastname) }}" class="input-main w-full">
                     </div>
                 </div>
 
@@ -52,19 +53,17 @@
                     </div>
                     <div class="space-y-1">
                         <label class="text-gray-500 text-lg">Підтвердження</label>
-                        <input type="password" name="password_confirmation" class="input-main w-full"
-                            placeholder="Повторіть пароль">
+                        <input type="password" name="password_confirmation" class="input-main w-full" placeholder="Повторіть пароль">
                     </div>
                 </div>
 
                 <div class="pt-4">
-                    <button type="submit" class="btn-primary w-full py-3 rounded-2xl shadow-lg shadow-cyan-600/20">
+                    <button type="submit" id="submit-btn" class="btn-primary w-full py-3 rounded-2xl shadow-lg shadow-cyan-600/20">
                         Зберегти зміни
                     </button>
                 </div>
             </form>
 
-            {{-- Твій напівпрозорий клас із заокругленням тільки знизу --}}
             <div class="px-8 py-4 bg-gray-50/50 rounded-b-3xl border-t border-gray-100 text-center">
                 <p class="text-[11px] text-gray-400 uppercase tracking-widest font-bold">
                     Зареєстровано: {{ $user->created_at->format('d.m.Y') }}
@@ -72,16 +71,63 @@
             </div>
         </div>
     </div>
-    <script>
-        function previewImage(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    document.getElementById('avatar-preview').src = e.target.result;
-                }
 
-                reader.readAsDataURL(input.files[0]);
+    <script>
+        const IMGBB_KEY = '{{ env('IMGBB_API_KEY') }}';
+        const avatarInput = document.getElementById('avatar-input');
+        const uploadStatus = document.getElementById('upload-status');
+        const submitBtn = document.getElementById('submit-btn');
+        const avatarUrlHidden = document.getElementById('avatar-url-hidden');
+
+        avatarInput.addEventListener('change', async function () {
+            const file = this.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('avatar-preview').src = e.target.result;
             }
+            reader.readAsDataURL(file);
+
+            submitBtn.disabled = true;
+            uploadStatus.textContent = 'Завантаження картинки на сервер...';
+            uploadStatus.style.color = '#3b82f6';
+
+            try {
+                const base64 = await toBase64(file);
+                const formData = new FormData();
+                formData.append('image', base64.split(',')[1]);
+
+                const res = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, {
+                    method: 'POST',
+                    body: formData,
+                });
+                const data = await res.json();
+
+                if (data && data.data && data.data.url) {
+                    avatarUrlHidden.value = data.data.url;
+                    uploadStatus.textContent = 'Картинку успішно завантажено';
+                    uploadStatus.style.color = '#10b981';
+                } else {
+                    uploadStatus.textContent = 'Помилка при завантаженні';
+                    uploadStatus.style.color = '#ef4444';
+                }
+            } catch (err) {
+                uploadStatus.textContent = 'Помилка мережі при завантаженні.';
+                uploadStatus.style.color = '#ef4444';
+                console.error(err);
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        function toBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
         }
     </script>
 @endsection
