@@ -30,7 +30,7 @@
         @endif
 
         <form action="{{ isset($item) ? route('items.update', $item->id) : route('items.store', $collection->id) }}"
-            method="POST" enctype="multipart/form-data" id="main-form">
+            method="POST" id="main-form">
             @csrf
             @if(isset($item))
                 @method('PUT')
@@ -65,14 +65,16 @@
                 <label class="text-sm font-black text-gray-600 uppercase tracking-wider">Фотографії</label>
 
                 <div class="relative group" id="drop-zone">
-                    <input type="file" id="file-input" name="images[]" multiple accept="image/*"
+                    <input type="file" id="file-input" multiple accept="image/*"
                         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                     <div class="border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center group-hover:border-cyan-400 group-hover:bg-cyan-50/30 transition-all bg-gray-50/50">
-                        <p class="text-gray-500 font-medium">Перетягніть фото або <span class="text-cyan-600 font-black">натисніть тут</span></p>
+                        <p class="text-gray-500 font-medium" id="upload-status">Перетягніть фото або <span class="text-cyan-600 font-black">натисніть тут</span></p>
                     </div>
                 </div>
                 <div id="preview-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4"></div>
             </div>
+
+            <div id="hidden-urls-container"></div>
 
             <div class="mt-8 flex justify-end gap-3 border-t border-gray-50 pt-6">
                 <button type="submit" class="btn-primary px-12 shadow-lg shadow-cyan-600/20">
@@ -83,10 +85,16 @@
     </div>
 
     <script>
+        const IMGBB_KEY = '{{ env('IMGBB_API_KEY') }}';
         const fileInput = document.getElementById('file-input');
         const previewGrid = document.getElementById('preview-grid');
         const dropZone = document.getElementById('drop-zone');
-        let dt = new DataTransfer();
+        const uploadStatus = document.getElementById('upload-status');
+        const form = document.getElementById('main-form');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const hiddenUrlsContainer = document.getElementById('hidden-urls-container');
+        
+        let uploadedImages = [];
 
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             dropZone.addEventListener(eventName, e => {
@@ -111,18 +119,46 @@
             handleFiles(this.files);
         });
 
-        function handleFiles(files) {
-            Array.from(files).forEach(file => {
-                if (!file.type.startsWith('image/')) return;
-                dt.items.add(file);
-                const reader = new FileReader();
-                reader.onload = e => renderPreview(e.target.result, file.name, dt.items.length - 1);
-                reader.readAsDataURL(file);
-            });
-            fileInput.files = dt.files;
+        async function handleFiles(files) {
+            const filesArray = Array.from(files);
+            if (filesArray.length === 0) return;
+
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            uploadStatus.textContent = 'Завантаження фото на сервер...';
+            uploadStatus.style.color = '#0891b2';
+
+            for (const file of filesArray) {
+                if (!file.type.startsWith('image/')) continue;
+
+                try {
+                    const base64 = await toBase64(file);
+                    const formData = new FormData();
+                    formData.append('image', base64.split(',')[1]);
+
+                    const res = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, {
+                        method: 'POST',
+                        body: formData,
+                    });
+                    const data = await res.json();
+
+                    if (data && data.data && data.data.url) {
+                        uploadedImages.push(data.data.url);
+                        renderPreview(data.data.url, uploadedImages.length - 1);
+                    }
+                } catch (err) {
+                    console.error('Помилка завантаження файлу:', err);
+                }
+            }
+
+            updateHiddenInputs();
+            uploadStatus.innerHTML = `Перетягніть фото або <span class="text-cyan-600 font-black">натисніть тут</span>`;
+            uploadStatus.style.color = '';
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         }
 
-        function renderPreview(src, name, index) {
+        function renderPreview(src, index) {
             const div = document.createElement('div');
             div.className = 'preview-item relative aspect-square rounded-xl overflow-hidden border border-cyan-100 group shadow-sm';
             div.dataset.index = index;
@@ -136,21 +172,33 @@
         }
 
         function removeFile(index) {
-            const newDt = new DataTransfer();
-            Array.from(fileInput.files).forEach((file, i) => {
-                if (i !== index) newDt.items.add(file);
-            });
-            fileInput.files = newDt.files;
-            dt = newDt;
+            uploadedImages.splice(index, 1);
             previewGrid.innerHTML = '';
-            Array.from(fileInput.files).forEach((file, i) => {
+            uploadedImages.forEach((url, i) => {
+                renderPreview(url, i);
+            });
+            updateHiddenInputs();
+        }
+
+        function updateHiddenInputs() {
+            hiddenUrlsContainer.innerHTML = '';
+            uploadedImages.forEach(url => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'uploaded_images[]';
+                input.value = url;
+                hiddenUrlsContainer.appendChild(input);
+            });
+        }
+
+        function toBase64(file) {
+            return new Promise((resolve, reject) => {
                 const reader = new FileReader();
-                reader.onload = e => renderPreview(e.target.result, file.name, i);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
                 reader.readAsDataURL(file);
             });
         }
-        const form = document.getElementById('main-form');
-        const submitBtn = form.querySelector('button[type="submit"]');
         
         form.addEventListener('submit', function() {
             submitBtn.disabled = true;
